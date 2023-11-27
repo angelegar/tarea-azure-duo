@@ -1,0 +1,31 @@
+name: despliega a Azure
+
+on: workflow_dispatch
+
+jobs:
+  prueba:
+  runs-on: ubuntu-latest
+  steps:
+  - name: probando
+    run: echo "job de prueba para dar tiempo"
+
+deploy:
+  runs-on: ubuntu-lastest
+  steps:
+  - uses: actions/checkout@master
+  - name: copy file via ssh password
+    uses: appleboy/scp-action@v0.1.4
+    env:
+      HOST: ${{secrets.HOST}}
+      USERNAME: ${{secrets.USERNAME}}
+      PORT: ${{secrets.PORT}}
+      KEY: ${{secrets.SSHKEY}}
+    with:
+      source: "index.html"
+      target: "var/www/html"
+      
+   - name: Sincronizar archivos con rsync
+     run: |
+       rsync -r --delete-after --quiet $GITHUB_WORKSPACE/ ${{secrets.USERNAME}}@${{secrets.HOST}}:/var/www/html/
+      env:
+        SSH_PRIVATE_KEY: ${{secrets.SSHKEY}}
